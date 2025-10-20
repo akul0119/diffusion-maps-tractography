@@ -1,147 +1,330 @@
-# diff-maps
-Diffusion Map Analysis for Tractography Data
+# Diffusion Maps for Tractography Analysis
 
-This repository contains scripts for applying diffusion maps to streamline tractography data, extracting features, and performing dimensionality reduction for classification. The workflow is designed to process diffusion MRI data, compute similarity matrices, and visualize results in a streamlined manner.
+A Python framework for analyzing white matter fiber tracts using diffusion maps dimensionality reduction. This toolkit characterizes individual streamlines within fiber bundles and finds their intrinsic manifold structure in latent space.
 
-Motivation
+## Overview
 
-Traumatic brain injury (TBI) can lead to widespread structural changes in white matter. Diffusion MRI-based tractography provides a way to map and analyze these changes, offering insights into TBI-induced alterations. This repository implements a novel pipeline for analyzing tractography data using diffusion maps, enabling the detection of subtle patterns in streamline features that could be relevant for classification tasks.
+This framework implements a novel approach to tractography analysis:
 
-Features
+1. **Feature Extraction**: Characterizes individual streamlines using geometric and spatial features
+2. **Diffusion Maps**: Finds low-dimensional manifold representation of fiber organization
+3. **Post-hoc Analysis**: Performs clustering, correlation analysis, and validation
+4. **Visualization**: Creates comprehensive plots of results
 
-Decompresses and processes .vtk.gz tractography files.
+### Key Features
 
-Extracts and computes streamline features, including lengths and centroids.
+- Automated processing of multiple subjects and bundles
+- Robust feature extraction from tractography streamlines
+- Adaptive kernel bandwidth selection for diffusion maps
+- Clustering analysis (K-means, DBSCAN) in embedding space
+- Feature-embedding correlation analysis
+- SLURM-ready batch processing scripts
+- Comprehensive visualizations
 
-Constructs similarity matrices using Gaussian weights.
+## Installation
 
-Reduces data dimensionality with diffusion maps.
+### Requirements
 
-Visualizes streamline clusters and dimensionality-reduced embeddings.
+- Python 3.7+
+- NumPy
+- SciPy
+- scikit-learn
+- matplotlib
+- seaborn
+- pyvista
 
-Installation
+### Setup
 
-Dependencies
+```bash
+# Clone the repository
+git clone https://github.com/yourusername/diffusion-maps-tractography.git
+cd diffusion-maps-tractography
 
-The following Python libraries are required:
+# Create virtual environment
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
 
-numpy
+# Install dependencies
+pip install -r requirements.txt
+```
 
-pandas
+## Quick Start
 
-matplotlib
+### Single Subject Analysis
 
-pyvista
+```bash
+# Run diffusion maps analysis
+python analysis/bundle_analysis.py \
+    --subject SUBJ001 \
+    --base_dir /path/to/data \
+    --output_dir ./results \
+    --bundle_list thalamic_bundles.txt \
+    --n_components 3
 
-scikit-learn
+# Run post-hoc analysis
+python analysis/posthoc_analysis.py \
+    --subject SUBJ001 \
+    --results_dir ./results \
+    --bundle_list thalamic_bundles.txt
+```
 
-scipy
+### Batch Processing with SLURM
 
-dipy
+```bash
+# Edit configuration in SLURM scripts
+cd slurm
 
-Install dependencies using:
+# Submit bundle analysis jobs
+sbatch run_bundle_analysis.sh
 
-pip install numpy pandas matplotlib pyvista scikit-learn scipy dipy
+# After completion, submit post-hoc analysis
+sbatch run_posthoc_analysis.sh
+```
 
-Setup
+## Data Structure
 
-Clone this repository:
+### Input Data Format
 
-git clone https://github.com/username/diffusion-map-tractography.git
-cd diffusion-map-tractography
+Your data should be organized as:
 
-Configure the paths:
+```
+base_dir/
+├── SUBJECT_ID_1/
+│   └── diff.tract/
+│       └── bundles/
+│           ├── bundle_name_1/
+│           │   └── curves.vtk.gz
+│           ├── bundle_name_2/
+│           │   └── curves.vtk.gz
+│           └── ...
+├── SUBJECT_ID_2/
+│   └── diff.tract/
+│       └── bundles/
+│           └── ...
+```
 
-Open the main script and update the BASE_DIR variable to point to the directory containing your data.
+### Bundle List File
 
-Ensure the subject list file (subject_list.txt) is placed in the base directory.
+Create a text file listing bundle names (one per line):
 
-Create the output directory (if not automatically created):
+```
+rh_thal_dlpfc
+rh_thal_dmpfc
+rh_thal_occip
+...
+```
 
-mkdir -p <BASE_DIRECTORY_PATH>/diff_map_output
+### Output Structure
 
-Usage
+```
+results/
+└── SUBJECT_ID/
+    ├── analysis_summary.txt
+    ├── posthoc_summary.txt
+    └── bundle_name/
+        ├── bundle_name_embedding.npy
+        ├── bundle_name_eigenvalues.npy
+        ├── bundle_name_features.npy
+        ├── bundle_name_fiber_properties.png
+        ├── bundle_name_diffusion_maps.png
+        ├── bundle_name_embedding_2d.png
+        ├── bundle_name_feature_correlations.png
+        ├── bundle_name_eigenvalue_analysis.png
+        └── bundle_name_posthoc_analysis.npz
+```
 
-Follow these steps to process your data:
+## Methods
 
-1. Prepare Data
+### Feature Extraction
 
-Place the .vtk.gz files for each subject in the respective directories within BASE_DIR.
+For each streamline, the following 12 features are extracted:
 
-Create a subject_list.txt file in BASE_DIR, listing the names of the subjects (one per line).
+**Geometric Features (3)**:
+- **Length**: Total fiber length (mm)
+- **Curvature**: Mean rate of change of tangent vectors
+- **Dispersion**: Mean distance from fiber center
 
-2. Run the Main Script
+**Spatial Features (9)**:
+- Start point coordinates (x, y, z)
+- End point coordinates (x, y, z)
+- Midpoint coordinates (x, y, z)
 
-Execute the main script to process all subjects:
+### Diffusion Maps Algorithm
 
-python main.py
+1. Compute pairwise Euclidean distances between fiber features
+2. Construct Gaussian kernel: K(x,y) = exp(-||x-y||²/(2ε²))
+3. Normalize to create Markov transition matrix
+4. Perform eigendecomposition
+5. Scale eigenvectors by sqrt(eigenvalues) for embedding
 
-3. Outputs
+**Key Parameters**:
+- `n_components`: Number of embedding dimensions (default: 3)
+- `epsilon`: Kernel bandwidth (default: auto-selected as median distance)
 
-The script generates the following outputs for each subject in the diff_map_output directory:
+### Post-hoc Analysis
 
-<subject_name>_features.csv: Streamline features (lengths and centroids).
+**Clustering Analysis**:
+- K-means with k=2 to 7 clusters
+- DBSCAN with various epsilon values
+- Silhouette scores for quality assessment
 
-<subject_name>_similarity.npy: Similarity matrix.
+**Correlation Analysis**:
+- Pearson correlations between original features and embedding dimensions
+- Statistical significance testing
 
-<subject_name>_diffusion_maps.npy: Dimensionality-reduced embeddings.
+**Eigenvalue Analysis**:
+- Variance explained per component
+- Cumulative variance plots
 
-<subject_name>_lengths.png: Histogram of streamline lengths.
+## Module Reference
 
-<subject_name>_clustering.png: Visualization of diffusion map clustering.
+### Core Modules
 
-Repository Structure
+#### `core/diffusion_maps.py`
+- `compute_diffusion_maps()`: Main diffusion maps implementation
+- `compute_kernel_bandwidth()`: Adaptive bandwidth selection
 
-.
-├── main.py                # Main script for processing subjects
-├── subject_list.txt       # List of subjects to process (example placeholder)
-├── diff_map_output/       # Directory for output files
-├── README.md              # Project documentation
-└── requirements.txt       # Dependency list
+#### `core/fiber_features.py`
+- `extract_fiber_features()`: Extract features from streamlines
+- `compute_fiber_length()`: Calculate fiber length
+- `compute_fiber_curvature()`: Calculate mean curvature
+- `compute_fiber_dispersion()`: Calculate dispersion
+- `analyze_fiber_properties()`: Statistical summary
 
-Example Workflow
+#### `core/io_utils.py`
+- `load_streamlines()`: Load VTK/VTK.GZ files
+- `read_bundle_list()`: Read bundle configuration
+- `read_subject_list()`: Read subject list
 
-Prepare your subject list file:
+### Analysis Modules
 
-Subject1
-Subject2
-Subject3
+#### `analysis/bundle_analysis.py`
+Main pipeline for diffusion maps analysis
 
-Organize your data:
+#### `analysis/posthoc_analysis.py`
+Post-hoc clustering and correlation analysis
 
-BASE_DIR/
-├── Subject1/
-│   └── tractography/curves.vtk.gz
-├── Subject2/
-│   └── tractography/curves.vtk.gz
-└── Subject3/
-    └── tractography/curves.vtk.gz
+### Visualization
 
-Run the script:
+#### `visualization/plots.py`
+- `visualize_fiber_properties()`: Plot fiber statistics
+- `visualize_diffusion_maps()`: Plot embedding results
 
-python main.py
+## Usage Examples
 
-Outputs will be saved in diff_map_output:
+### Python API
 
-diff_map_output/
-├── Subject1_features.csv
-├── Subject1_similarity.npy
-├── Subject1_diffusion_maps.npy
-├── Subject1_lengths.png
-├── Subject1_clustering.png
-└── ...
+```python
+from core import load_streamlines, extract_fiber_features, compute_diffusion_maps
+from visualization import visualize_diffusion_maps
 
-Acknowledgments
+# Load data
+fibers = load_streamlines('path/to/curves.vtk.gz')
 
-This repository was developed as part of ongoing research in diffusion MRI-based tractography analysis.
+# Extract features
+features = extract_fiber_features(fibers)
 
-Special thanks to the contributors and collaborators who supported this work.
+# Compute diffusion maps
+embedding, eigenvalues = compute_diffusion_maps(features, n_components=3)
 
-Contact
+# Visualize
+visualize_diffusion_maps(embedding, eigenvalues, features,
+                         output_dir='./output', bundle_name='my_bundle')
+```
 
-For questions or feedback, please contact:
+### Custom Analysis
 
-Name: Akul Sharma
+```python
+import numpy as np
+from core import compute_diffusion_maps, extract_fiber_features
 
-Email: akulshar@usc.edu
+# Your custom preprocessing
+fibers = preprocess_my_data()
 
+# Extract features with custom function
+features = extract_fiber_features(fibers)
+
+# Compute embedding with custom epsilon
+embedding, eigenvalues = compute_diffusion_maps(
+    features,
+    n_components=5,
+    epsilon=0.5  # Custom bandwidth
+)
+
+# Save results
+np.save('my_embedding.npy', embedding)
+```
+
+## Citation
+
+If you use this framework in your research, please cite:
+
+```bibtex
+@software{diffusion_maps_tractography,
+  author = {Sharma, Akul},
+  title = {Diffusion Maps for Tractography Analysis},
+  year = {2024},
+  url = {https://github.com/akul0119/diffusion-maps-tractography}
+}
+```
+
+**Diffusion Maps Reference**:
+''@article{chamberland2019dimensionality,
+  title={Dimensionality reduction of diffusion MRI measures for improved tractometry of the human brain},
+  author={Chamberland, Marc and Raven, Emma P and Genc, Sermin and Duffy, Kaitlin and Descoteaux, Maxime and Parker, Geoffrey D and Jones, Derek K},
+  journal={NeuroImage},
+  volume={200},
+  pages={89--100},
+  year={2019},
+  publisher={Elsevier}
+}''
+@article{coifman2006diffusion,
+  title={Diffusion maps},
+  author={Coifman, Ronald R and Lafon, St{\'e}phane},
+  journal={Applied and Computational Harmonic Analysis},
+  volume={21},
+  number={1},
+  pages={5--30},
+  year={2006},
+  publisher={Elsevier}
+}
+@article{coifman2005geometric,
+  title={Geometric diffusions as a tool for harmonic analysis and structure definition of data: Diffusion maps},
+  author={Coifman, Ronald R and Lafon, St{\'e}phane and Lee, Ann B and Maggioni, Mauro and Nadler, Boaz and Warner, Frederick and Zucker, Steven W},
+  journal={Proceedings of the National Academy of Sciences},
+  volume={102},
+  number={21},
+  pages={7426--7431},
+  year={2005},
+  publisher={National Academy of Sciences}
+}
+
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## Contact
+
+For questions or issues, please:
+- Open an issue on GitHub
+- Contact: [your email]
+
+## Acknowledgments
+
+- Diffusion maps algorithm based on Coifman & Lafon (2006)
+- Tractography processing inspired by [relevant papers/tools]
+
+## Version History
+
+### v1.0.0 (2024)
+- Initial release
+- Core diffusion maps implementation
+- Feature extraction from streamlines
+- Post-hoc analysis tools
+- SLURM batch processing scripts
+- Comprehensive visualization suite
