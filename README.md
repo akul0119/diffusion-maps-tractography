@@ -269,6 +269,19 @@ If you use this framework in your research, please cite:
 ```
 
 **Diffusion Maps Reference**:
+
+```bibtex
+@article{coifman2006diffusion,
+  title={Diffusion maps},
+  author={Coifman, Ronald R and Lafon, St{\'e}phane},
+  journal={Applied and computational harmonic analysis},
+  volume={21},
+  number={1},
+  pages={5--30},
+  year={2006}
+}
+```
+
 ''@article{chamberland2019dimensionality,
   title={Dimensionality reduction of diffusion MRI measures for improved tractometry of the human brain},
   author={Chamberland, Marc and Raven, Emma P and Genc, Sermin and Duffy, Kaitlin and Descoteaux, Maxime and Parker, Geoffrey D and Jones, Derek K},
