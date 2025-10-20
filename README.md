@@ -1,6 +1,11 @@
 # Diffusion Maps for Tractography Analysis
 
-A Python framework for analyzing white matter fiber tracts using diffusion maps dimensionality reduction. This toolkit characterizes individual streamlines within fiber bundles and finds their intrinsic manifold structure in latent space.
+A Python framework for analyzing white matter fiber tracts using diffusion maps dimensionality reduction. This toolkit characterizes individual streamlines within fiber bundles and finds their intrinsic manifold structure in latent space. 
+
+This repository implements the Diffusion Maps–based Tractography Analysis Framework described in: 
+Sharma, A., Joshi, A., & Leahy, R. (2025) **A Tractography Analysis Framework using Diffusion Maps to Study Thalamic Connectivity in Traumatic Brain Injury.**
+**_Proceedings of the IEEE Engineering in Medicine and Biology Society (EMBC)_.
+The method identified significant associations between diffusion map embeddings and functional outcomes (GOSE scores), revealing potential biomarkers for injury severity and recovery trajectories using the TRACK-TBI dataset. 
 
 ## Overview
 
@@ -271,15 +276,6 @@ If you use this framework in your research, please cite:
 **Diffusion Maps Reference**:
 
 ```bibtex
-@article{coifman2006diffusion,
-  title={Diffusion maps},
-  author={Coifman, Ronald R and Lafon, St{\'e}phane},
-  journal={Applied and computational harmonic analysis},
-  volume={21},
-  number={1},
-  pages={5--30},
-  year={2006}
-}
 @article{chamberland2019dimensionality,
   title={Dimensionality reduction of diffusion MRI measures for improved tractometry of the human brain},
   author={Chamberland, Marc and Raven, Emma P and Genc, Sermin and Duffy, Kaitlin and Descoteaux, Maxime and Parker, Geoffrey D and Jones, Derek K},
@@ -289,25 +285,13 @@ If you use this framework in your research, please cite:
   year={2019},
   publisher={Elsevier}
 }
-```
-
-''@article{chamberland2019dimensionality,
+@article{chamberland2019dimensionality,
   title={Dimensionality reduction of diffusion MRI measures for improved tractometry of the human brain},
   author={Chamberland, Marc and Raven, Emma P and Genc, Sermin and Duffy, Kaitlin and Descoteaux, Maxime and Parker, Geoffrey D and Jones, Derek K},
   journal={NeuroImage},
   volume={200},
   pages={89--100},
   year={2019},
-  publisher={Elsevier}
-}''
-@article{coifman2006diffusion,
-  title={Diffusion maps},
-  author={Coifman, Ronald R and Lafon, St{\'e}phane},
-  journal={Applied and Computational Harmonic Analysis},
-  volume={21},
-  number={1},
-  pages={5--30},
-  year={2006},
   publisher={Elsevier}
 }
 @article{coifman2005geometric,
@@ -320,7 +304,7 @@ If you use this framework in your research, please cite:
   year={2005},
   publisher={National Academy of Sciences}
 }
-
+```
 
 ## Contributing
 
@@ -334,12 +318,11 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 For questions or issues, please:
 - Open an issue on GitHub
-- Contact: [your email]
+- Contact: akul.s19@gmail.com
 
 ## Acknowledgments
 
 - Diffusion maps algorithm based on Coifman & Lafon (2006)
-- Tractography processing inspired by [relevant papers/tools]
 
 ## Version History
 
