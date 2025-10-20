@@ -1,4 +1,4 @@
-# Diffusion Maps for Tractography Analysis
+<img width="819" height="508" alt="Screen Shot 2025-10-20 at 2 34 53 PM" src="https://github.com/user-attachments/assets/7c76035b-9539-453a-8282-4524ddd98f91" /># Diffusion Maps for Tractography Analysis
 
 A Python framework for analyzing white matter fiber tracts using diffusion maps dimensionality reduction. This toolkit characterizes individual streamlines within fiber bundles and finds their intrinsic manifold structure in latent space. 
 
